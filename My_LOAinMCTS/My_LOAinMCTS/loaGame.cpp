@@ -19,7 +19,7 @@ namespace loa {
 		std::cout << "2 for man vs AI ;" << std::endl;
 		std::cout << "3 for  AI vs man;" << std::endl;
 		std::cout << "4 for  AI vs AI ;" << std::endl;
-		char gamemode = '\0';
+		int8_t gamemode = 0;
 		std::cin >> gamemode;
 		while (gamemode < '1' || gamemode > '4')
 		{
@@ -66,7 +66,7 @@ namespace loa {
 				std::cout << "wrong piece" << std::endl;
 				continue;
 			}
-			updateValid(pos_x - 1, pos_y - 1);
+			updateValid( pos_x - 1, pos_y - 1);
 			if (validPositions.empty())
 			{
 				std::cout << "cannot move this piece" << std::endl;
@@ -116,7 +116,7 @@ namespace loa {
 		des.second = des_y-1;
 	}
 
-	void loaGame::mode1()
+	void loaGame::mode1()   // man vs man
 	{
 		POSITION pos, des;
 		while (1)
@@ -129,15 +129,15 @@ namespace loa {
 		else std::cout << "White wins" << std::endl;
 	}
 
-	void loaGame::mode2()
+	void loaGame::mode2()   // man vs AI
 	{
 	}
 
-	void loaGame::mode3()
+	void loaGame::mode3()   //  AI vs man
 	{
 	}
 
-	void loaGame::mode4()
+	void loaGame::mode4()   //  AI vs AI
 	{
 	}
 

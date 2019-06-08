@@ -1,6 +1,9 @@
 ﻿#include "pch.h"
 #include "MyChessBoard.h"
 #include <iostream>
+#include <bitset>
+#include <bitset>
+#include <bitset>
 
 
 namespace loa {
@@ -87,7 +90,7 @@ namespace loa {
 			if (black_pieces.test(des.first * 8 + des.second))
 			{
 				black_pieces.reset(des.first * 8 + des.second);
-				num_of_pieces.second--;
+				num_of_pieces.first--;
 				
 				return true;
 			}
@@ -96,12 +99,52 @@ namespace loa {
 	}
 	Color MyChessBoard::checkWinner()
 	{
+		if (num_of_pieces.first == 1) return Color::WHITE;
+		else if (num_of_pieces.second == 1) return  Color::BLACK;
 
+		std::bitset<64> b_flagboard = black_pieces, w_flag_board = white_pieces;
+		for (auto i = 0; i < 64; ++i)
+		{
+			if(b_flagboard.test(i))
+			{
+				dfs(b_flagboard, i);
+				if (b_flagboard.count() == 0) return Color::BLACK;
+				else break;
+			}
+		}
+
+		for (auto i = 0; i < 64; ++i)
+		{
+			if (w_flag_board.test(i))
+			{
+				dfs(w_flag_board, i);
+				if (w_flag_board.count() == 0) return Color::WHITE;
+				else break;
+			}
+		}
 		return Color::NONE;
 	}
-	int MyChessBoard::dfs()
+
+	void MyChessBoard::dfs(std::bitset<64>& board, int pos)
 	{
-		
+		if (board.test(pos))
+		{
+			board.reset(pos);
+			if (pos % 8 != 0)
+			{
+				if (pos - 9 > 0) dfs(board, pos - 9);
+				if (pos - 1 > 0) dfs(board, pos - 1);
+				if (pos + 7 < 64) dfs(board, pos + 7);
+			}
+			if (pos - 8 > 0 ) dfs(board, pos - 8);
+			if (pos + 8 < 64) dfs(board, pos + 8);
+			if (pos % 8 != 7)
+			{
+				if (pos - 7 > 0) dfs(board, pos - 7);
+				if (pos + 1 < 64) dfs(board, pos + 1);
+				if (pos + 9 < 64) dfs(board, pos + 9);
+			}
+		}
 	}
 
 }

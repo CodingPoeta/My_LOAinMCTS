@@ -42,6 +42,6 @@ namespace loa{
 		std::pair<uint8_t, uint8_t> num_of_pieces;   // first = black, second = white
 		bool getFeasibleDir(const POSITION pos, const POSITION dir, POSITION& des);
 		uint8_t getNumofPiecesDir(const POSITION pos, const POSITION dir);
-		int dfs();
+		void dfs(std::bitset<64>& board, int pos);
 	};
 }
