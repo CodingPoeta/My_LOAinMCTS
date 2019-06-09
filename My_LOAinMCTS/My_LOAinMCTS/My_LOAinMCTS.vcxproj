@@ -153,11 +153,14 @@
   <ItemGroup>
     <ClInclude Include="glut.h" />
     <ClInclude Include="loaGame.h" />
+    <ClInclude Include="MCTS.h" />
     <ClInclude Include="MyChessBoard.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="loaGame.cpp" />
+    <ClCompile Include="MCTS.cpp" />
     <ClCompile Include="MyChessBoard.cpp" />
     <ClCompile Include="My_LOAinMCTS.cpp" />
     <ClCompile Include="pch.cpp">

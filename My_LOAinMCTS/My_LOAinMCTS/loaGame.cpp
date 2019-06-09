@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "loaGame.h"
+#include "MCTS.h"
 #include <iostream>
 
 
@@ -131,6 +132,21 @@ namespace loa {
 
 	void loaGame::mode2()   // man vs AI
 	{
+		POSITION pos, des;
+		loa::MCT AIengin(chessBoard, Color::WHITE);
+		while (1)
+		{
+			getInput(pos, des);
+			chessBoard.update(pos, des);
+			validPositions.clear();
+			drawBoard();
+			AIengin.postOpMove(pos, des);
+			if (chessBoard.checkWinner() != Color::NONE) break;
+			AIengin.getAINextMove(chessBoard);
+			drawBoard();
+		}
+		if (chessBoard.checkWinner() == Color::BLACK) std::cout << "Black wins" << std::endl;
+		else std::cout << "White wins" << std::endl;
 	}
 
 	void loaGame::mode3()   //  AI vs man

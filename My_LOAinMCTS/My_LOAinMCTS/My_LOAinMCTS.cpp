@@ -5,14 +5,16 @@
 #include <iostream>
 #include "loaGame.h"
 
+
 int main()
 {
+	srand(int(23333));
 	loa::loaGame mygame;
 	// loa::guiGame mygame;
 	// loa::socketGame mygame;
 
 	mygame.start();
 
-    std::cout << "Exiting, thank you!\n";
+    std::cout << "Exiting, thank you!" << std::endl;
 	return 0;
 }

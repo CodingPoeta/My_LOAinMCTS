@@ -14,19 +14,19 @@ namespace loa{
 		MyChessBoard() : black_pieces(0x7e0000000000007e),
 						white_pieces(0x0081818181818100),
 			WhoseTurn(Color::BLACK), num_of_pieces(12, 12) {}
-		MyChessBoard(uint64_t& black, uint64_t white, Color& color) :
+		MyChessBoard(uint64_t& black, uint64_t& white, Color& color) :
 					black_pieces(black), white_pieces(white), WhoseTurn(color)
 		{
 			num_of_pieces = std::make_pair(black_pieces.count(), white_pieces.count());
 		}
+
+		std::vector<POSITION> getFeasible(POSITION pos);
+		bool update(const POSITION& pos, const POSITION& des);  // return whether a piece got eaten.
+		Color checkWinner();
 		Color getWhoseTurn()
 		{
 			return WhoseTurn;
 		}
-		std::vector<POSITION> getFeasible(POSITION pos);
-		bool update(const POSITION& pos, const POSITION& des);  // return whether a piece got eaten.
-		Color checkWinner();
-
 		Color getColor(const uint8_t pos)
 		{
 			if (black_pieces.test(pos))
@@ -34,6 +34,18 @@ namespace loa{
 			else if (white_pieces.test(pos))
 				return Color::WHITE;
 			return Color::NONE;
+		}
+		std::pair<uint8_t, uint8_t> getNums()
+		{
+			return num_of_pieces;
+		}
+
+		bool operator == (const MyChessBoard& p)
+		{
+			if (black_pieces.operator!=(p.black_pieces)) return false;
+			if (white_pieces.operator!=(p.white_pieces)) return false;
+			if (WhoseTurn != p.WhoseTurn) return false;
+			return true;
 		}
 
 	private:
