@@ -1,15 +1,17 @@
 #include "pch.h"
 #include "MCTS.h"
+#include <iostream>
 
 namespace loa {
 
 	void MC_NODE::freeNodes(MC_NODE* root)
 	{
-		for (auto& p : root->children)
+		for (auto p : children)
 		{
 			if (p == root) continue;
-			freeNodes(nullptr);
+			p->freeNodes(nullptr);
 			delete p;
+			// std::cout << "freenode" << std::endl;
 			// p = nullptr;
 		}
 	}
@@ -24,15 +26,17 @@ namespace loa {
 	}
 
 	// ! TODO
-	MC_NODE* MC_NODE::bestChild()
+	MC_NODE* MC_NODE::bestChild(bool simornot)
 	{
+		int cnt = simCounts;
 		MC_NODE* res = nullptr;
 		double score = 0, max_score = 0;
 		for (auto iter: children)
 		{
 			if (iter->simCounts)
 			{
-				score = iter->winCounts*1.0 / iter->simCounts;
+				if (simornot) score = (iter->winCounts*1.0+cnt/5.0) / iter->simCounts;
+				else score = (iter->winCounts*1.0) / iter->simCounts;
 				if (score > max_score)
 				{
 					max_score = score;
@@ -52,13 +56,29 @@ namespace loa {
 		local_ptr = lastlastRoot;
 		lastlastRoot = lastRoot;
 		lastRoot = rootNode;
-		if (rootNode->children.empty()) bornChildren(rootNode);
-		rootNode = rootNode->bestChild();
+		nodeptr_mtx.lock();
+		if (rootNode->children.empty())
+		{
+			bornChildren(rootNode);
+			if (rootNode->children.empty())
+			{
+				std::cout << "canNotgetAInextmove" << std::endl;
+				exit(0);
+			}
+		}
+		if (rootNode->bestChild(false) == nullptr)
+			rootNode = (rootNode->children[0]);
+		else 
+			rootNode = rootNode->bestChild(false);
+		nodeptr_mtx.unlock();
 		rootNode->parent = nullptr;
+
 		cb = rootNode->chess_board;
 		if (local_ptr)
 		{
+			std::cout << "into AI freenode" << std::endl;
 			local_ptr->freeNodes(lastlastRoot);
+			std::cout << "leave AI freenode" << std::endl;
 			delete local_ptr;
 		}
 		cnt_mtx.unlock();
@@ -70,11 +90,13 @@ namespace loa {
 		MyChessBoard cb = rootNode->chess_board;
 
 		cb.update(pos, des);
+
 		cnt_mtx.lock();
 		while (cnt > 0);
 		local_ptr = lastlastRoot;
 		lastlastRoot = lastRoot;
 		lastRoot = rootNode;
+		nodeptr_mtx.lock();
 		if (rootNode->children.empty()) bornChildren(rootNode);
 		for (auto &iter: rootNode->children)
 		{
@@ -84,11 +106,14 @@ namespace loa {
 				break;
 			}
 		}
+		nodeptr_mtx.unlock();
 
 		rootNode->parent = nullptr;
 		if (local_ptr)
 		{
+			std::cout << "into freenode" << std::endl;
 			local_ptr->freeNodes(lastlastRoot);
+			std::cout << "leave freenode" << std::endl;
 			delete local_ptr;
 		}
 		cnt_mtx.unlock();
@@ -101,18 +126,23 @@ namespace loa {
 
 	void MCT::startUCTSearch()
 	{
-
+		std::cout << "thread" << std::endl;
 		MC_NODE* local_root = nullptr;
 		while(1)
 		{
 			cnt_mtx.lock();
+			cnt_mtx2.lock();
 			cnt++;
+			cnt_mtx2.unlock();
 			cnt_mtx.unlock();
+
 			nodeptr_mtx.lock();
 			local_root = rootNode;
 			nodeptr_mtx.unlock();
 
-			MC_NODE* leaf = treePolicy(local_root);
+			MC_NODE* leaf = nullptr;
+			// std::cout << local_root << std::endl;
+			leaf= treePolicy(local_root);
 			int reward = defaultPolicy(leaf);
 
 			backup_mtx.lock();
@@ -127,14 +157,16 @@ namespace loa {
 
 	MC_NODE* MCT::treePolicy(MC_NODE* p)
 	{
+		if (!p) return nullptr;
 		while (p->chess_board.checkWinner() == Color::NONE)
 		{
 			if (!p->isFullExpanded()) return expand(p);
 			else
 			{
-				p = p->bestChild();
+				p = p->bestChild(true);
 			}
 		}
+		return nullptr;
 	}
 
 	MC_NODE* MCT::expand(MC_NODE* node)
@@ -152,6 +184,7 @@ namespace loa {
 
 	int MCT::defaultPolicy(MC_NODE* p)
 	{
+		if (p == nullptr) return 1;
 		MyChessBoard local_chessboard = p->chess_board;
 		int cnt = 0;
 		while (local_chessboard.checkWinner() != Color::NONE)
@@ -172,13 +205,18 @@ namespace loa {
 			p->simCounts += 2;   // 平局一分  胜利两分
 			p->winCounts += reward;
 			p = p->parent;
+			reward = 2 - reward;
 		}
 	}
 
 	void MCT::bornChildren(MC_NODE* p)
 	{
-		if (!p->children.empty()) return;
-
+		born_mtx.lock();
+		if (!p->children.empty())
+		{
+			born_mtx.unlock();
+			return;
+		}
 		Color color = p->chess_board.getWhoseTurn();
 		MyChessBoard localChessboard;
 		MC_NODE *localNode_ptr = nullptr;
@@ -198,6 +236,8 @@ namespace loa {
 				}
 			}
 		}
+
+		born_mtx.unlock();
 	}
 
 	void MCT::sim_move(MyChessBoard& cb)

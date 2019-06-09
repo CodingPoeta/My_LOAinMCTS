@@ -143,7 +143,6 @@ namespace loa {
 			AIengin.postOpMove(pos, des);
 			if (chessBoard.checkWinner() != Color::NONE) break;
 			AIengin.getAINextMove(chessBoard);
-			drawBoard();
 		}
 		if (chessBoard.checkWinner() == Color::BLACK) std::cout << "Black wins" << std::endl;
 		else std::cout << "White wins" << std::endl;
@@ -155,6 +154,16 @@ namespace loa {
 
 	void loaGame::mode4()   //  AI vs AI
 	{
+		loa::MCT AIengin(chessBoard, Color::WHITE);
+		while (1)
+		{
+			drawBoard();
+			if (chessBoard.checkWinner() != Color::NONE) break;
+			AIengin.getAINextMove(chessBoard);
+			std::this_thread::sleep_for(std::chrono::milliseconds(20000));
+		}
+		if (chessBoard.checkWinner() == Color::BLACK) std::cout << "Black wins" << std::endl;
+		else std::cout << "White wins" << std::endl;
 	}
 
 	void loaGame::updateValid(int8_t i, int8_t j)

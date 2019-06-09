@@ -3,7 +3,7 @@
 #include <thread>
 #include <mutex>
 
-const int threadNum = 1;
+const int threadNum = 4;
 
 namespace loa {
 	class MC_NODE
@@ -19,7 +19,7 @@ namespace loa {
 
 		void freeNodes(MC_NODE* root);
 		bool isFullExpanded();
-		MC_NODE* bestChild();
+		MC_NODE* bestChild(bool simornot);
 	private:
 		MC_NODE(){}
 	};
@@ -45,10 +45,10 @@ namespace loa {
 		void backOneStep();  //悔棋
 
 	private:
-		std::mutex backup_mtx, cnt_mtx, cnt_mtx2, nodeptr_mtx;
+		std::mutex backup_mtx, cnt_mtx, cnt_mtx2, nodeptr_mtx, born_mtx;
 		Color AI_color;
 		int msg_cnt;
-		int cnt;    //用于记录正在uctsearch但是还没有backup的线程数目
+		volatile int cnt;    //用于记录正在uctsearch但是还没有backup的线程数目
 		MC_NODE *rootNode, *lastRoot, *lastlastRoot;
 
 		MCT(){}
